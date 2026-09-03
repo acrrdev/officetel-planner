@@ -1,4 +1,4 @@
-// 운영용 상품 API
+// 운영용 상품 / 통계 API
 // 브라우저 -> Cloudflare Worker -> D1
 const d1ProductApi = {
     API_BASE_URL: 'https://acrrot123-api.acrrot123.workers.dev',
@@ -28,5 +28,37 @@ const d1ProductApi = {
 
         const data = await response.json();
         return Array.isArray(data) ? data : (data.products || []);
+    },
+
+    async recordVisit(isUnique) {
+        return await this.postStats('/api/stats/visit', {
+            is_unique: isUnique === true
+        });
+    },
+
+    async recordProductClick(productId) {
+        return await this.postStats('/api/stats/product-click', {
+            product_id: Number(productId)
+        });
+    },
+
+    async postStats(path, body) {
+        const response = await fetch(`${this.API_BASE_URL}${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(body),
+            keepalive: true
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data?.error || `D1 stats API error: ${response.status}`);
+        }
+
+        return data;
     }
 };

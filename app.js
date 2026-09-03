@@ -27,6 +27,55 @@ const USE_LOCAL_DB = false;
 const productCache = new Map();
 const productLoadPromises = new Map();
 
+
+// ------------------------------------------------------------
+// 방문 / 상품 클릭 통계
+// USE_LOCAL_DB=true  -> 로컬 Node.js API -> SQLite
+// USE_LOCAL_DB=false -> Cloudflare Worker API -> D1
+// ------------------------------------------------------------
+const VISIT_STORAGE_KEY = 'officetel_planner_last_visit_date';
+
+function getKoreaDateKey() {
+    // 한국은 DST가 없으므로 UTC+9를 적용해 YYYY-MM-DD를 만든다.
+    return new Date(Date.now() + 9 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+}
+
+function recordPageVisit() {
+    const statsApi = USE_LOCAL_DB ? localProductApi : d1ProductApi;
+    if (!statsApi || typeof statsApi.recordVisit !== 'function') return;
+
+    const today = getKoreaDateKey();
+    let isUnique = true;
+
+    try {
+        const lastVisitDate = localStorage.getItem(VISIT_STORAGE_KEY);
+        isUnique = lastVisitDate !== today;
+
+        if (isUnique) {
+            localStorage.setItem(VISIT_STORAGE_KEY, today);
+        }
+    } catch (error) {
+        // localStorage 사용이 제한된 환경에서는 방문 자체는 기록한다.
+        console.warn('방문자 중복 확인 저장소를 사용할 수 없습니다.', error);
+    }
+
+    statsApi.recordVisit(isUnique)
+        .catch(error => console.warn('방문 통계 기록 실패:', error));
+}
+
+function recordProductClick(product) {
+    const statsApi = USE_LOCAL_DB ? localProductApi : d1ProductApi;
+    if (!statsApi || typeof statsApi.recordProductClick !== 'function') return;
+
+    const productId = Number(product?.id);
+    if (!Number.isInteger(productId) || productId <= 0) return;
+
+    statsApi.recordProductClick(productId)
+        .catch(error => console.warn('상품 클릭 통계 기록 실패:', error));
+}
+
 let state = { room: { w: 6500, h: 4200, type: 'rectangle', lshapeCorner: 'tr' }, items: [], selectedId: null, zoom: 0.8, history: [], future: [] };
 let drag = null;
 let resizeDrag = null;
@@ -2227,9 +2276,12 @@ async function loadProducts(category) {
     return await loadPromise;
 }
 
-// 상품 카드의 "상품 보러가기"는 DB의 제휴 URL을 연다.
+// 상품 카드의 "상품 보러가기"는 클릭 통계를 기록한 뒤 DB의 제휴 URL을 연다.
 function onProductViewClick(product) {
     if (!product?.affiliate_url) return;
+
+    // 통계 저장은 비동기로 보내고, 제휴 링크 이동은 기다리지 않는다.
+    recordProductClick(product);
     window.open(product.affiliate_url, '_blank', 'noopener,noreferrer');
 }
 
@@ -2553,4 +2605,4 @@ document.addEventListener('pointerdown', e => {
 window.addEventListener('blur', () => { closeContextMenu(); closeRoomContextMenu(); });
 window.addEventListener('resize', () => { closeContextMenu(); closeRoomContextMenu(); });
 
-buildTools(); seed(); render();
+buildTools(); seed(); render(); recordPageVisit();
