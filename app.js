@@ -21,7 +21,7 @@ const catalog = {
 // true  : 로컬 Node.js API -> SQLite
 // false : Cloudflare Worker API -> D1
 // 이 값 하나로 플래너와 admin 페이지의 DB 모드를 함께 전환합니다.
-const USE_LOCAL_DB = true;
+const USE_LOCAL_DB = false;
 
 // 한 번 불러온 카테고리 상품은 페이지가 열려 있는 동안 메모리에 보관한다.
 const productCache = new Map();
@@ -2054,7 +2054,8 @@ function renderSvg() {
 }
 
 function checkCollisions() {
-    if (!$('#collisionToggle').checked) return;
+    const collisionToggle = $('#collisionToggle');
+    if (!collisionToggle || !collisionToggle.checked) return;
     const furn = state.items.filter(i => i.kind === 'furniture');
 
     for (let i = 0; i < furn.length; i++) {
@@ -2179,7 +2180,7 @@ function renderProperties() {
         b.classList.toggle('active', +b.dataset.rot === (it.type === 'entrance' ? entranceRotationFromSide(it.wallSide || 'bottom') : rot))
     );
 }
-function renderPlaced() { const list = $('#placedList'); list.innerHTML = ''; const arr = state.items.filter(i => i.kind === 'furniture'); arr.forEach(i => { const li = document.createElement('li'); li.textContent = `${i.name} (${i.w} x ${i.h})`; list.appendChild(li) }); $('#furnitureCount').textContent = `총 가구 ${arr.length}개` }
+function renderPlaced() { const list = $('#placedList'); if (!list) return; list.innerHTML = ''; const arr = state.items.filter(i => i.kind === 'furniture'); arr.forEach(i => { const li = document.createElement('li'); li.textContent = `${i.name} (${i.w} x ${i.h})`; list.appendChild(li) }); }
 const productCategoryLabels = {
     bed: '침대',
     desk: '책상',
@@ -2309,30 +2310,36 @@ function createProductCard(product) {
         img.alt = product.name || '상품 이미지';
         img.loading = 'lazy';
 
-        const imageScale =
-            Number.isFinite(Number(product.image_view?.scale))
-                ? Number(product.image_view.scale)
-                : 215;
-
-        const imagePosX =
-            Number.isFinite(Number(product.image_view?.x))
-                ? Number(product.image_view.x)
-                : 50;
-
-        const imagePosY =
-            Number.isFinite(Number(product.image_view?.y))
-                ? Number(product.image_view.y)
-                : 50;
-
-        img.style.left = `${imagePosX}%`;
-        img.style.top = `${imagePosY}%`;
-        img.style.transform =
-            `translate(-50%, -50%) scale(${imageScale / 100})`;
-
         img.onerror = () => {
             imageBox.innerHTML = '';
             imageBox.textContent = '이미지 없음';
         };
+        img.title = '쿠팡상품 보러가기';
+        img.setAttribute('role', 'link');
+        img.tabIndex = 0;
+
+        const openAffiliateFromImage = () => {
+            if (!product.affiliate_url) return;
+
+            // 버튼 클릭과 동일하게 클릭 통계를 기록하되,
+            // 통계 실패가 상품 이동을 막지는 않습니다.
+            recordProductClick(product.id);
+
+            window.open(
+                product.affiliate_url,
+                '_blank',
+                'noopener,noreferrer'
+            );
+        };
+
+        img.addEventListener('click', openAffiliateFromImage);
+        img.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openAffiliateFromImage();
+            }
+        });
+
         imageBox.appendChild(img);
     } else {
         imageBox.textContent = '이미지 없음';
@@ -2350,7 +2357,7 @@ function createProductCard(product) {
     actions.className = 'actions';
     const button = document.createElement('button');
     button.className = 'product-view';
-    button.textContent = '상품 보러가기 ›';
+    button.textContent = '쿠팡상품 보러가기 ›';
     button.onclick = () => onProductViewClick(product);
     actions.appendChild(button);
 
@@ -2538,7 +2545,7 @@ function endNotchDrag() {
 $('#zoomIn').onclick = () => { state.zoom = Math.min(1.5, state.zoom + .1); render() }; $('#zoomOut').onclick = () => { state.zoom = Math.max(.4, state.zoom - .1); render() };
 $('#gridToggle').onchange = e => $('#gridBg').style.display = e.target.checked ? 'block' : 'none';
 $('#gridSize').onchange = e => { const v = +e.target.value; $('#smallGrid').setAttribute('width', v / 5); $('#smallGrid').setAttribute('height', v / 5); $('#grid').setAttribute('width', v); $('#grid').setAttribute('height', v) };
-$('#collisionToggle').onchange = render;
+if ($('#collisionToggle')) $('#collisionToggle').onchange = render;
 $('#guideToggle')?.addEventListener('change', e => {
     if (e.target.checked) {
         const all = $('#allGuideToggle');

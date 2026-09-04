@@ -99,22 +99,14 @@
         <div class="unit-note">단위 : mm</div>
       </div>
 
-      <div class="bottom-panel panel">
-        <div class="product-panel-head">
-          <h3>추천 상품</h3>
-          <p class="affiliate-notice">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
-        </div>
-        <div class="product-tabs" id="productTabs"></div>
-        <div class="product-row" id="productRow"></div>
-      </div>
     </section>
 
     <aside class="right-panel panel">
-      <div class="room-detail-card">
+      <div class="room-detail-card compact-section">
         <h3>방 상세 크기</h3>
-        <div class="room-size-grid">
-          <label>가로 <input id="detailRoomW" type="number" step="10"> mm</label>
-          <label>세로 <input id="detailRoomH" type="number" step="10"> mm</label>
+        <div class="compact-pair room-size-grid">
+          <label><span>가로</span><input id="detailRoomW" type="number" step="10"><em>mm</em></label>
+          <label><span>세로</span><input id="detailRoomH" type="number" step="10"><em>mm</em></label>
         </div>
         <div id="detailLshapeControls" class="detail-lshape hidden">
           <label>꺾임 X <input id="detailNotchX" type="number" step="10"> mm</label>
@@ -123,31 +115,56 @@
         <small class="room-detail-help">도면의 파란 핸들을 드래그해도 값이 실시간으로 반영됩니다.</small>
       </div>
 
-      <div class="property-card">
-        <div class="prop-head"><div><h3>선택한 항목</h3><strong id="selectedName">침대</strong><div id="selectedSize">1500 x 2000 mm</div></div><button class="danger" id="deleteBtn">🗑</button></div>
+      <div class="property-card compact-section">
+        <div class="prop-head">
+          <div>
+            <h3>선택한 항목</h3>
+            <strong id="selectedName">침대</strong>
+            <div id="selectedSize">1500 x 2000 mm</div>
+          </div>
+          <button class="danger" id="deleteBtn">🗑</button>
+        </div>
+
         <hr>
+
         <h3>위치</h3>
-        <div class="xy-row"><label>X <input id="posX" type="number"></label><label>Y <input id="posY" type="number"></label></div>
-        <div class="align-row"><button data-align="left">←</button><button data-align="centerX">↔</button><button data-align="right">→</button><button data-align="top">↑</button><button data-align="centerY">↕</button><button data-align="bottom">↓</button></div>
+        <div class="xy-row compact-pair">
+          <label><span>X</span><input id="posX" type="number"></label>
+          <label><span>Y</span><input id="posY" type="number"></label>
+        </div>
+        <div class="align-row compact-align">
+          <button data-align="left" title="왼쪽">←</button>
+          <button data-align="centerX" title="가로 중앙">↔</button>
+          <button data-align="right" title="오른쪽">→</button>
+          <button data-align="top" title="위">↑</button>
+          <button data-align="centerY" title="세로 중앙">↕</button>
+          <button data-align="bottom" title="아래">↓</button>
+        </div>
+
         <hr>
+
         <h3>크기</h3>
-        <label class="field">가로 <input id="itemW" type="number"> mm</label>
-        <label class="field">세로 <input id="itemH" type="number"> mm</label>
-        <label class="check"><input id="ratioLock" type="checkbox" checked> 비율 유지</label>
-        <hr>
-        <h3>회전</h3>
-        <div class="rotation-row"><button data-rot="0" class="active">0°</button><button data-rot="90">90°</button><button data-rot="180">180°</button><button data-rot="270">270°</button></div>
-        <hr>
-        <h3>기타</h3>
-        <label class="check"><input id="snapWall" type="checkbox"> 벽에 붙이기</label>
-        <label class="check"><input id="collisionToggle" type="checkbox" checked> 다른 가구와 충돌 표시</label>
+        <div class="compact-pair item-size-pair">
+          <label><span>가로</span><input id="itemW" type="number"><em>mm</em></label>
+          <label><span>세로</span><input id="itemH" type="number"><em>mm</em></label>
+        </div>
+        <label class="check compact-check"><input id="ratioLock" type="checkbox" checked> 비율 유지</label>
       </div>
+
       <div class="placed-list">
         <h3>배치한 가구 목록</h3>
         <ol id="placedList"></ol>
-        <div class="summary"><b id="furnitureCount">총 가구 0개</b><button class="primary wide">배치 결과 확인하기 ›</button></div>
       </div>
     </aside>
+
+    <section class="bottom-panel panel">
+      <div class="product-panel-head">
+        <h3>추천 상품</h3>
+        <p class="affiliate-notice">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+      </div>
+      <div class="product-tabs" id="productTabs"></div>
+      <div class="product-row" id="productRow"></div>
+    </section>
   </main>
 
   <div class="template-modal hidden" id="templateModal" role="dialog" aria-modal="true" aria-labelledby="templateModalTitle">
