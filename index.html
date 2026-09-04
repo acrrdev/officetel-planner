@@ -1,265 +1,162 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="원룸과 오피스텔의 침대, 책상, 소파 등 가구 배치를 미리 확인해보세요. 방 크기와 가구 크기를 직접 설정할 수 있는 무료 가구 배치 시뮬레이션입니다.">
-  <title>원룸·오피스텔 가구 배치 시뮬레이션 | 무료 방 배치 플래너</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>원룸·오피스텔 가구 배치 시뮬레이션 | 무료 방 꾸미기</title>
+
+  <meta name="description"
+        content="원룸과 오피스텔의 침대·책상·소파 배치를 미리 확인하는 무료 가구 배치 시뮬레이터. 방 크기를 입력하고 2D 평면도로 가구를 배치해 보세요.">
+
+  <meta name="keywords"
+        content="원룸 가구배치, 오피스텔 가구배치, 방 꾸미기, 가구 시뮬레이션, 2D 평면도, 침대 배치, 무료 인테리어">
+
+  <meta property="og:title"
+        content="원룸·오피스텔 가구 배치 시뮬레이션">
+
+  <meta property="og:description"
+        content="방 크기를 입력하고 침대·책상·소파를 직접 배치해보는 무료 2D 평면도 시뮬레이터.">
+
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">오피스텔 플래너 <span>쉽게 만드는 나만의 공간</span></div>
-    <nav class="top-actions">
-      <button data-action="new">⌂ 새로 만들기</button>
-      <button data-action="undo">↶ 실행취소</button>
-      <button data-action="redo">↷ 다시실행</button>
-    </nav>
-    <div class="top-right">
-      <button>❔ 도움말</button>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">오피스텔 플래너</a>
+      <nav class="header-actions">
+        <a href="#guide">사용 방법</a>
+        <a class="header-start" href="planner.html">플래너 시작하기</a>
+      </nav>
     </div>
   </header>
 
-  <main class="app-shell">
-    <aside class="left-panel panel">
-      <div class="segmented"><button class="active" data-tab="structure">구조물</button><button data-tab="furniture">가구</button></div>
-      <section id="structureTab">
-        <h3>고정 구조물</h3>
-        <div class="tool-list" id="structureTools"></div>
-      </section>
-      <section id="furnitureTab" class="hidden">
-        <h3>가구</h3>
-        <div class="tool-list" id="furnitureTools"></div>
-      </section>
-      <button class="outline wide" id="drawWallBtn">＋ 직접 그리기 (벽)</button>
-<small>제휴 : 쿠팡 파트너스 ⓘ</small>
-      </div>
-    </aside>
+  <main>
+    <section class="hero">
+      <div class="sky-decoration" aria-hidden="true">
+        <div class="sun-glow"></div>
 
-    <section class="workspace">
-      <div class="controlbar panel">
-        <div><b>방 크기</b> <span class="room-type-badge" id="roomTypeLabel">직사각형 원룸</span> 가로 <input id="roomW" type="number" value="6500"> mm 세로 <input id="roomH" type="number" value="4200"> mm</div>
-        <div id="lshapeControls" class="lshape-controls hidden">
-          <b>ㄱ자 꺾임</b>
-          <label>X <input id="notchX" type="number" step="10" value="3430"> mm</label>
-          <label>Y <input id="notchY" type="number" step="10" value="1950"> mm</label>
+        <div class="cloud cloud-a"><i></i><b></b></div>
+        <div class="cloud cloud-b"><i></i><b></b></div>
+        <div class="cloud cloud-c"><i></i><b></b></div>
+        <div class="cloud cloud-d"><i></i><b></b></div>
+        <div class="cloud cloud-e"><i></i><b></b></div>
+
+        <div class="city-silhouette">
+          <span style="--x:2%;--w:34px;--h:62px"></span>
+          <span style="--x:8%;--w:50px;--h:88px"></span>
+          <span style="--x:16%;--w:38px;--h:52px"></span>
+          <span style="--x:23%;--w:58px;--h:74px"></span>
+          <span style="--x:34%;--w:42px;--h:47px"></span>
+          <span style="--x:43%;--w:62px;--h:66px"></span>
+          <span style="--x:55%;--w:46px;--h:55px"></span>
+          <span style="--x:65%;--w:54px;--h:82px"></span>
+          <span style="--x:76%;--w:36px;--h:58px"></span>
+          <span style="--x:84%;--w:56px;--h:76px"></span>
+          <span style="--x:94%;--w:42px;--h:50px"></span>
         </div>
-        <label><input id="gridToggle" type="checkbox" checked> 격자</label>
-        <label class="guide-toggle"><input id="guideToggle" type="checkbox"> 보조선 표시</label>
-        <label>격자 간격 <select id="gridSize"><option value="100">100 mm</option><option value="250">250 mm</option><option value="500">500 mm</option></select></label>
-        <div class="zoom"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">＋</button></div>
       </div>
 
-      <div class="canvas-wrap panel">
-        <div id="canvasViewport">
-          <svg id="floorSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5200 7200" aria-label="도면 편집 영역">
-            <defs>
-              <pattern id="smallGrid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="#e9eef5" stroke-width="8"/></pattern>
-              <pattern id="grid" width="500" height="500" patternUnits="userSpaceOnUse"><rect width="500" height="500" fill="url(#smallGrid)"/><path d="M 500 0 L 0 0 0 500" fill="none" stroke="#d8e1ec" stroke-width="12"/></pattern>
-              <!-- 디테일 렌더 테스트: 바닥/가구용 패턴과 입체감 -->
-              <linearGradient id="woodBase" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#ead7b5"/>
-                <stop offset="50%" stop-color="#dfc79f"/>
-                <stop offset="100%" stop-color="#ecd9b9"/>
-              </linearGradient>
-              <pattern id="woodFloor" width="720" height="180" patternUnits="userSpaceOnUse">
-                <rect width="720" height="180" fill="url(#woodBase)"/>
-                <path d="M0 3 H720 M0 177 H720 M180 0 V180 M540 0 V180" stroke="#c5a77a" stroke-width="7" opacity=".35"/>
-                <path d="M25 55 C140 18 250 95 360 48 S585 25 690 72 M70 130 C210 95 330 150 485 115 S630 92 705 125" fill="none" stroke="#b58f5c" stroke-width="5" opacity=".18"/>
-              </pattern>
-              <linearGradient id="linenGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#fffdf8"/>
-                <stop offset="100%" stop-color="#e8e1d6"/>
-              </linearGradient>
-              <linearGradient id="sofaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#eee7da"/>
-                <stop offset="100%" stop-color="#cfc3b1"/>
-              </linearGradient>
-              <linearGradient id="woodFurniture" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#d4ae78"/>
-                <stop offset="55%" stop-color="#b98855"/>
-                <stop offset="100%" stop-color="#9f6f43"/>
-              </linearGradient>
-              <filter id="furnitureShadow" x="-20%" y="-20%" width="140%" height="150%">
-                <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#30281f" flood-opacity=".24"/>
-              </filter>
-              <filter id="softInner" x="-10%" y="-10%" width="120%" height="120%">
-                <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#7c6a55" flood-opacity=".18"/>
-              </filter>
-            </defs>
-            <rect id="gridBg" width="5200" height="7200" fill="url(#grid)"/>
-            <g id="roomLayer"></g>
-            <g id="itemLayer"></g>
-          </svg>
+      <div class="hero-inner">
+        <p class="eyebrow">무료 2D 가구 배치 도구</p>
+        <h1>원룸·오피스텔<br>가구 배치 시뮬레이션</h1>
+        <p class="hero-lead">
+          이사 전, 가구를 사기 전.<br>
+          내 방에 실제로 어떻게 배치될지 미리 확인해보세요.
+        </p>
+        <div class="hero-actions">
+          <a class="primary-button" href="planner.html">무료로 배치 시작하기</a>
+          <a class="secondary-button" href="#about">어떤 기능인가요?</a>
         </div>
-        <div class="unit-note">단위 : mm</div>
+        <p class="hero-note">회원가입 · 프로그램 설치 없이 바로 사용할 수 있습니다.</p>
       </div>
-
     </section>
 
-    <aside class="right-panel panel">
-      <div class="room-detail-card compact-section">
-        <h3>방 상세 크기</h3>
-        <div class="compact-pair room-size-grid">
-          <label><span>가로</span><input id="detailRoomW" type="number" step="10"><em>mm</em></label>
-          <label><span>세로</span><input id="detailRoomH" type="number" step="10"><em>mm</em></label>
+    <section class="features">
+      <article class="feature-card">
+        <div class="feature-icon">01</div>
+        <h2>실제 크기로 배치</h2>
+        <p>방과 가구의 크기를 mm 단위로 설정해 실제 공간에 들어가는지 미리 확인할 수 있습니다.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">02</div>
+        <h2>간편한 2D 배치</h2>
+        <p>침대, 책상, 소파, 수납장 등 필요한 가구를 추가하고 마우스로 자유롭게 옮겨보세요.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">03</div>
+        <h2>가구 구매 전 확인</h2>
+        <p>새 가구를 사기 전에 방 안에 놓을 수 있는지, 어느 위치가 좋은지 간단하게 비교할 수 있습니다.</p>
+      </article>
+    </section>
+
+    <section class="about-section" id="about">
+      <div class="section-inner">
+        <div class="section-heading">
+          <p class="eyebrow">ABOUT</p>
+          <h2>가구를 옮기기 전에, 화면에서 먼저 배치해보세요.</h2>
         </div>
-        <div id="detailLshapeControls" class="detail-lshape hidden">
-          <label>꺾임 X <input id="detailNotchX" type="number" step="10"> mm</label>
-          <label>꺾임 Y <input id="detailNotchY" type="number" step="10"> mm</label>
+        <div class="about-copy">
+          <p>
+            새로운 집으로 이사를 준비하거나 방의 가구 배치를 바꾸고 싶으신가요?
+            이 플래너는 가구를 직접 옮기기 전에 방의 크기와 가구 크기를 입력하고
+            원하는 위치에 배치해볼 수 있는 직관적인 2D 가구 배치 시뮬레이터입니다.
+          </p>
+          <p>
+            별도의 프로그램 설치 없이 웹에서 바로 사용할 수 있으며,
+            침대·책상·소파·수납장 등의 가구와 창문·현관 같은 구조물을 배치해
+            공간의 크기와 동선을 간단하게 확인할 수 있습니다.
+            이사 전 배치를 계획하거나 새로운 가구를 구매하기 전에
+            내 공간에 잘 맞는지 미리 확인해보세요.
+          </p>
         </div>
-        <small class="room-detail-help">도면의 파란 핸들을 드래그해도 값이 실시간으로 반영됩니다.</small>
       </div>
+    </section>
 
-      <div class="property-card compact-section">
-        <div class="prop-head">
-          <div>
-            <h3>선택한 항목</h3>
-            <strong id="selectedName">침대</strong>
-            <div id="selectedSize">1500 x 2000 mm</div>
-          </div>
-          <button class="danger" id="deleteBtn">🗑</button>
+    <section class="guide-section" id="guide">
+      <div class="section-inner">
+        <div class="section-heading">
+          <p class="eyebrow">HOW TO USE</p>
+          <h2>처음이어도 간단하게 사용할 수 있습니다.</h2>
         </div>
-
-        <hr>
-
-        <h3>위치</h3>
-        <div class="xy-row compact-pair">
-          <label><span>X</span><input id="posX" type="number"></label>
-          <label><span>Y</span><input id="posY" type="number"></label>
+        <div class="guide-grid">
+          <article class="guide-step">
+            <span>STEP 1</span>
+            <h3>방 크기 설정</h3>
+            <p>실제 방의 가로·세로 크기를 입력해 기본 공간을 만듭니다.</p>
+          </article>
+          <article class="guide-step">
+            <span>STEP 2</span>
+            <h3>구조와 가구 추가</h3>
+            <p>현관, 창문, 침대, 책상 등 필요한 항목을 선택해 방 안에 추가합니다.</p>
+          </article>
+          <article class="guide-step">
+            <span>STEP 3</span>
+            <h3>배치와 크기 조정</h3>
+            <p>가구를 직접 이동하고 크기를 조절하면서 원하는 배치를 만들어봅니다.</p>
+          </article>
+          <article class="guide-step">
+            <span>STEP 4</span>
+            <h3>추천 상품 확인</h3>
+            <p>배치한 가구 카테고리와 별도로 등록된 추천 상품을 함께 확인할 수 있습니다.</p>
+          </article>
         </div>
-        <div class="align-row compact-align">
-          <button data-align="left" title="왼쪽">←</button>
-          <button data-align="centerX" title="가로 중앙">↔</button>
-          <button data-align="right" title="오른쪽">→</button>
-          <button data-align="top" title="위">↑</button>
-          <button data-align="centerY" title="세로 중앙">↕</button>
-          <button data-align="bottom" title="아래">↓</button>
-        </div>
-
-        <hr>
-
-        <h3>크기</h3>
-        <div class="compact-pair item-size-pair">
-          <label><span>가로</span><input id="itemW" type="number"><em>mm</em></label>
-          <label><span>세로</span><input id="itemH" type="number"><em>mm</em></label>
-        </div>
-        <label class="check compact-check"><input id="ratioLock" type="checkbox" checked> 비율 유지</label>
       </div>
+    </section>
 
-      <div class="placed-list">
-        <h3>배치한 가구 목록</h3>
-        <ol id="placedList"></ol>
-      </div>
-    </aside>
-
-    <section class="bottom-panel panel">
-      <div class="product-panel-head">
-        <h3>추천 상품</h3>
-        <p class="affiliate-notice">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
-      </div>
-
-      <div class="product-split">
-        <section class="product-zone furniture-product-zone">
-          <div class="product-zone-head">
-            <div>
-              <strong>가구 추천</strong>
-              <span>배치하거나 선택한 가구 카테고리</span>
-            </div>
-          </div>
-          <div class="product-tabs" id="productTabs"></div>
-          <div class="product-row" id="productRow"></div>
-        </section>
-
-        <section class="product-zone extra-product-zone">
-          <div class="product-zone-head extra-head">
-            <div>
-              <strong>그 외 추천</strong>
-              <span>이동형TV · 수납트레이 등 직접 등록한 카테고리</span>
-            </div>
-            <div class="extra-product-search">
-              <input id="extraProductSearch" type="search" placeholder="카테고리 검색">
-              <button id="extraProductSearchBtn" type="button">검색</button>
-            </div>
-          </div>
-          <div id="extraProductCategoryHint" class="extra-category-hint"></div>
-          <div class="product-row" id="extraProductRow"></div>
-        </section>
+    <section class="final-cta">
+      <div class="final-cta-inner">
+        <h2>내 방 배치를 직접 만들어보세요.</h2>
+        <p>복잡한 가입이나 설치 없이 바로 시작할 수 있습니다.</p>
+        <a class="primary-button" href="planner.html">플래너 시작하기</a>
       </div>
     </section>
   </main>
 
-  <div class="template-modal hidden" id="templateModal" role="dialog" aria-modal="true" aria-labelledby="templateModalTitle">
-    <div class="template-modal-backdrop" data-template-close></div>
-    <div class="template-dialog panel">
-      <div class="template-head">
-        <div>
-          <h2 id="templateModalTitle">새 도면 만들기</h2>
-          <p>기본 형태를 고른 뒤 내부 벽과 구조물을 개별적으로 수정할 수 있습니다.</p>
-        </div>
-        <button type="button" class="template-close" data-template-close aria-label="닫기">✕</button>
-      </div>
-
-      <div class="template-grid" id="templateGrid">
-        <button type="button" class="template-card active" data-template="rectangle">
-          <span class="template-preview rectangle"><i></i></span>
-          <strong>직사각형 원룸</strong>
-          <small>가장 기본적인 원룸 구조</small>
-        </button>
-        <button type="button" class="template-card" data-template="lshape">
-          <span class="template-preview lshape"><i></i></span>
-          <strong>ㄱ자형 원룸</strong>
-          <small>한쪽 공간이 꺾여 있는 구조</small>
-        </button>
-        <button type="button" class="template-card" data-template="oneHalf">
-          <span class="template-preview onehalf"><i></i></span>
-          <strong>1.5룸</strong>
-          <small>침실 공간이 일부 분리된 구조</small>
-        </button>
-        <button type="button" class="template-card" data-template="twoRoom">
-          <span class="template-preview tworoom"><i></i></span>
-          <strong>투룸</strong>
-          <small>방과 생활공간을 나누는 구조</small>
-        </button>
-        <button type="button" class="template-card" data-template="blank">
-          <span class="template-preview blank"><i></i></span>
-          <strong>빈 도면</strong>
-          <small>구조물 없이 직접 시작</small>
-        </button>
-      </div>
-
-      <div class="template-size">
-        <label>전체 가로 <input id="templateW" type="number" min="1500" step="10" value="6500"> mm</label>
-        <label>전체 세로 <input id="templateH" type="number" min="1500" step="10" value="4200"> mm</label>
-      </div>
-
-      <div class="template-actions">
-        <button type="button" data-template-close>취소</button>
-        <button type="button" class="primary" id="createTemplateBtn">도면 만들기</button>
-      </div>
-    </div>
-  </div>
-
-
-  <div id="itemContextMenu" class="context-menu hidden" role="menu" aria-hidden="true">
-    <button type="button" data-context-action="rotateLeft">↶ 왼쪽 90° 회전</button>
-    <button type="button" data-context-action="rotateRight">↷ 오른쪽 90° 회전</button>
-    <div class="context-menu-separator hidden" data-flip-separator></div>
-    <button type="button" class="hidden" data-context-action="flipHorizontal">↔ 좌우 반전</button>
-    <div class="context-menu-separator"></div>
-    <button type="button" class="context-danger" data-context-action="delete">삭제</button>
-  </div>
-
-
-  <div id="roomContextMenu" class="context-menu hidden" role="menu" aria-hidden="true">
-    <button type="button" data-room-context-action="rotateLeft">↶ 방 왼쪽 90° 회전</button>
-    <button type="button" data-room-context-action="rotateRight">↷ 방 오른쪽 90° 회전</button>
-    <div class="context-menu-separator"></div>
-    <button type="button" data-room-context-action="flipHorizontal">↔ 방 좌우 반전</button>
-  </div>
-
-  <script src="localProductApi.js"></script>
-  <script src="d1ProductApi.js"></script>
-  <script src="app.js"></script>
+  <footer class="site-footer">
+    <p>원룸·오피스텔 가구 배치 시뮬레이션</p>
+  </footer>
 </body>
 </html>
