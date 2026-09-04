@@ -21,7 +21,12 @@ const catalog = {
 // true  : 로컬 Node.js API -> SQLite
 // false : Cloudflare Worker API -> D1
 // 이 값 하나로 플래너와 admin 페이지의 DB 모드를 함께 전환합니다.
-const USE_LOCAL_DB = false;
+const USE_LOCAL_DB = true;
+
+// 상품카드 표시 방식
+// 'detail' = 기존 방식: 배너 + 상품명 + 사이즈 + 버튼
+// 'banner' = 단순 방식: 쿠팡 배너 이미지만 표시
+const PRODUCT_CARD_MODE = 'banner';
 
 // 한 번 불러온 카테고리 상품은 페이지가 열려 있는 동안 메모리에 보관한다.
 const productCache = new Map();
@@ -2300,36 +2305,31 @@ function productSizeLabel(product) {
 
 function createProductCard(product) {
     const c = document.createElement('div');
-    c.className = 'product-card';
+    c.className = `product-card ${PRODUCT_CARD_MODE === 'banner' ? 'banner-only' : 'detail-mode'}`;
 
     const imageBox = document.createElement('div');
     imageBox.className = 'product-img';
+
+    const openAffiliateFromImage = () => {
+        if (!product?.affiliate_url) return;
+
+        // 클릭 통계는 비동기로 기록하고 링크 이동은 즉시 처리한다.
+        recordProductClick(product);
+        window.open(product.affiliate_url, '_blank', 'noopener,noreferrer');
+    };
+
     if (product.image_url) {
         const img = document.createElement('img');
         img.src = product.image_url;
-        img.alt = product.name || '상품 이미지';
+        img.alt = product.name || '쿠팡 상품 배너';
         img.loading = 'lazy';
-
-        img.onerror = () => {
-            imageBox.innerHTML = '';
-            imageBox.textContent = '이미지 없음';
-        };
         img.title = '쿠팡상품 보러가기';
         img.setAttribute('role', 'link');
         img.tabIndex = 0;
 
-        const openAffiliateFromImage = () => {
-            if (!product.affiliate_url) return;
-
-            // 버튼 클릭과 동일하게 클릭 통계를 기록하되,
-            // 통계 실패가 상품 이동을 막지는 않습니다.
-            recordProductClick(product.id);
-
-            window.open(
-                product.affiliate_url,
-                '_blank',
-                'noopener,noreferrer'
-            );
+        img.onerror = () => {
+            imageBox.innerHTML = '';
+            imageBox.textContent = '이미지 없음';
         };
 
         img.addEventListener('click', openAffiliateFromImage);
@@ -2345,6 +2345,13 @@ function createProductCard(product) {
         imageBox.textContent = '이미지 없음';
     }
 
+    // 배너 전용 모드에서는 다른 상품 정보 UI를 만들지 않는다.
+    if (PRODUCT_CARD_MODE === 'banner') {
+        c.appendChild(imageBox);
+        return c;
+    }
+
+    // 기존 상세형 상품카드
     const title = document.createElement('h4');
     title.textContent = product.name || '상품';
     title.title = product.name || '';
@@ -2355,12 +2362,13 @@ function createProductCard(product) {
 
     const actions = document.createElement('div');
     actions.className = 'actions';
+
     const button = document.createElement('button');
     button.className = 'product-view';
     button.textContent = '쿠팡상품 보러가기 ›';
     button.onclick = () => onProductViewClick(product);
-    actions.appendChild(button);
 
+    actions.appendChild(button);
     c.append(imageBox, title, meta, actions);
     return c;
 }
@@ -2371,6 +2379,8 @@ async function renderProducts(cat = null) {
 
     const token = ++productRenderToken;
     row.innerHTML = '';
+    row.classList.toggle('banner-only-mode', PRODUCT_CARD_MODE === 'banner');
+    row.classList.toggle('detail-mode', PRODUCT_CARD_MODE === 'detail');
 
     const placed = placedProductCategories();
     if (!placed.length || !cat) return;
