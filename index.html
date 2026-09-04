@@ -157,8 +157,34 @@
         <h3>추천 상품</h3>
         <p class="affiliate-notice">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
       </div>
-      <div class="product-tabs" id="productTabs"></div>
-      <div class="product-row" id="productRow"></div>
+
+      <div class="product-split">
+        <section class="product-zone furniture-product-zone">
+          <div class="product-zone-head">
+            <div>
+              <strong>가구 추천</strong>
+              <span>배치하거나 선택한 가구 카테고리</span>
+            </div>
+          </div>
+          <div class="product-tabs" id="productTabs"></div>
+          <div class="product-row" id="productRow"></div>
+        </section>
+
+        <section class="product-zone extra-product-zone">
+          <div class="product-zone-head extra-head">
+            <div>
+              <strong>그 외 추천</strong>
+              <span>이동형TV · 수납트레이 등 직접 등록한 카테고리</span>
+            </div>
+            <div class="extra-product-search">
+              <input id="extraProductSearch" type="search" placeholder="카테고리 검색">
+              <button id="extraProductSearchBtn" type="button">검색</button>
+            </div>
+          </div>
+          <div id="extraProductCategoryHint" class="extra-category-hint"></div>
+          <div class="product-row" id="extraProductRow"></div>
+        </section>
+      </div>
     </section>
   </main>
 

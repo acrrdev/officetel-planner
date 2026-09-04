@@ -344,7 +344,7 @@ function pushHistory() { state.history.push(JSON.stringify({ room: state.room, i
 function restore(s) { const o = JSON.parse(s); state.room = { type: 'rectangle', lshapeCorner: 'tr', ...o.room }; normalizeLShapeRoom(); state.items = o.items; state.items.filter(i => i.type === 'entrance').forEach(i => snapEntranceToWall(i)); state.items.filter(isWallFixture).forEach(i => snapWallFixture(i)); state.selectedId = o.selectedId; syncInputs(); render() }
 function buildTools() { catalog.structure.forEach(x => $('#structureTools').appendChild(toolEl(x, 'structure'))); catalog.furniture.forEach(x => $('#furnitureTools').appendChild(toolEl(x, 'furniture'))) }
 function toolEl(x, kind) { const d = document.createElement('div'); d.className = 'tool-item'; d.innerHTML = `<span class="tool-icon">${x[2]}</span><span>${x[1]}</span>`; d.onclick = () => addItem(x, kind); return d }
-function addItem(x, kind) { pushHistory(); const [type, name, icon, w, h] = x; const item = { id: uid(), type, name, kind, x: Math.max(0, (state.room.w - w) / 2), y: Math.max(0, (state.room.h - h) / 2), w, h, rot: 0, color: kind === 'furniture' ? '#eadbc8' : '#d7dde6' }; if (item.type === 'entrance') snapEntranceToWall(item); if (isWallFixture(item)) snapWallFixture(item); state.items.push(item); state.selectedId = item.id; render() }
+function addItem(x, kind) { pushHistory(); const [type, name, icon, w, h] = x; const item = { id: uid(), type, name, kind, x: Math.max(0, (state.room.w - w) / 2), y: Math.max(0, (state.room.h - h) / 2), w, h, rot: 0, color: kind === 'furniture' ? '#eadbc8' : '#d7dde6' }; if (item.type === 'entrance') snapEntranceToWall(item); if (isWallFixture(item)) snapWallFixture(item); state.items.push(item); state.selectedId = item.id; if (kind === 'furniture') preferredProductCategory = type; render() }
 function syncRoomDimensionInputs() {
     if ($('#roomW')) $('#roomW').value = Math.round(state.room.w);
     if ($('#roomH')) $('#roomH').value = Math.round(state.room.h);
@@ -2043,6 +2043,7 @@ function renderSvg() {
             e.stopPropagation();
             closeContextMenu();
             state.selectedId = it.id;
+            if (it.kind === 'furniture') preferredProductCategory = it.type;
             render();
         });
 
@@ -2186,6 +2187,18 @@ function renderProperties() {
     );
 }
 function renderPlaced() { const list = $('#placedList'); if (!list) return; list.innerHTML = ''; const arr = state.items.filter(i => i.kind === 'furniture'); arr.forEach(i => { const li = document.createElement('li'); li.textContent = `${i.name} (${i.w} x ${i.h})`; list.appendChild(li) }); }
+let preferredProductCategory = null;
+
+const FIXED_FURNITURE_PRODUCT_CATEGORIES = new Set([
+    'bed','desk','chair','storage','sofa','table','tv','fridge','closet'
+]);
+
+const EXTRA_PRODUCT_API_BASE = USE_LOCAL_DB
+    ? 'http://localhost:3000'
+    : 'https://acrrot123-api.acrrot123.workers.dev';
+
+const extraProductCache = new Map();
+
 const productCategoryLabels = {
     bed: '침대',
     desk: '책상',
@@ -2210,6 +2223,9 @@ function activeProductCat() {
     const active = $('#productTabs .active')?.dataset.category;
     const placed = placedProductCategories();
 
+    if (preferredProductCategory && placed.includes(preferredProductCategory)) {
+        return preferredProductCategory;
+    }
     if (active === 'all' && placed.length > 1) return 'all';
     if (active && placed.includes(active)) return active;
     return placed[0] || null;
@@ -2228,6 +2244,7 @@ function renderProductTabs() {
         button.dataset.category = category;
         button.textContent = productCategoryLabels[category] || category;
         button.onclick = () => {
+            preferredProductCategory = category;
             $$('#productTabs button').forEach(x => x.classList.remove('active'));
             button.classList.add('active');
             renderProducts(category);
@@ -2240,6 +2257,7 @@ function renderProductTabs() {
         allButton.dataset.category = 'all';
         allButton.textContent = '전체 보기 ›';
         allButton.onclick = () => {
+            preferredProductCategory = null;
             $$('#productTabs button').forEach(x => x.classList.remove('active'));
             allButton.classList.add('active');
             renderProducts('all');
@@ -2247,9 +2265,11 @@ function renderProductTabs() {
         tabs.appendChild(allButton);
     }
 
-    const nextActive = previous === 'all' && placed.length > 1
-        ? 'all'
-        : (placed.includes(previous) ? previous : placed[0]);
+    const nextActive = preferredProductCategory && placed.includes(preferredProductCategory)
+        ? preferredProductCategory
+        : (previous === 'all' && placed.length > 1
+            ? 'all'
+            : (placed.includes(previous) ? previous : placed[0]));
 
     if (nextActive) {
         tabs.querySelector(`[data-category="${nextActive}"]`)?.classList.add('active');
@@ -2406,6 +2426,124 @@ async function renderProducts(cat = null) {
             row.innerHTML = '<div class="product-load-error">상품 목록을 불러오지 못했습니다.</div>';
         }
     }
+}
+
+
+async function loadExtraProducts(keyword = '') {
+    const normalized = String(keyword || '').trim();
+    const cacheKey = normalized.toLowerCase();
+
+    if (extraProductCache.has(cacheKey)) {
+        return extraProductCache.get(cacheKey);
+    }
+
+    const params = new URLSearchParams({
+        site: 'officetel_furniture'
+    });
+    if (normalized) params.set('search', normalized);
+
+    const response = await fetch(`${EXTRA_PRODUCT_API_BASE}/api/products?${params.toString()}`, {
+        cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ([]));
+
+    if (!response.ok) {
+        throw new Error(data?.error || `HTTP ${response.status}`);
+    }
+
+    const all = Array.isArray(data) ? data : [];
+    const extras = all.filter(product =>
+        product?.category_code &&
+        !FIXED_FURNITURE_PRODUCT_CATEGORIES.has(product.category_code)
+    );
+
+    extraProductCache.set(cacheKey, extras);
+    return extras;
+}
+
+function renderExtraCategoryChips(items) {
+    const hint = $('#extraProductCategoryHint');
+    if (!hint) return;
+
+    hint.innerHTML = '';
+    const categories = [...new Set(
+        items
+            .map(x => String(x.category_code || '').trim())
+            .filter(Boolean)
+    )];
+
+    if (!categories.length) {
+        hint.textContent = '수동 등록한 카테고리가 없습니다.';
+        return;
+    }
+
+    categories.forEach(category => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'extra-category-chip';
+        chip.textContent = category;
+        chip.onclick = () => {
+            const input = $('#extraProductSearch');
+            if (input) input.value = category;
+            renderExtraProducts(category);
+        };
+        hint.appendChild(chip);
+    });
+}
+
+let extraProductRenderToken = 0;
+
+async function renderExtraProducts(keyword = '') {
+    const row = $('#extraProductRow');
+    if (!row) return;
+
+    const token = ++extraProductRenderToken;
+    row.innerHTML = '';
+    row.classList.add('banner-only-mode');
+
+    try {
+        const items = await loadExtraProducts(keyword);
+        if (token !== extraProductRenderToken) return;
+
+        renderExtraCategoryChips(items);
+
+        if (!items.length) {
+            const empty = document.createElement('div');
+            empty.className = 'extra-product-empty';
+            empty.textContent = keyword
+                ? '검색한 카테고리에 맞는 추천 상품이 없습니다.'
+                : '수동 등록한 기타 추천 상품이 없습니다.';
+            row.appendChild(empty);
+            return;
+        }
+
+        items.forEach(product => row.appendChild(createProductCard(product)));
+    } catch (error) {
+        console.error('기타 추천상품 조회 실패:', error);
+        if (token === extraProductRenderToken) {
+            row.innerHTML = '<div class="product-load-error">기타 추천상품을 불러오지 못했습니다.</div>';
+        }
+    }
+}
+
+function bindExtraProductSearch() {
+    const input = $('#extraProductSearch');
+    const button = $('#extraProductSearchBtn');
+    if (!input || !button) return;
+
+    const search = () => {
+        // 새 검색 시 서버 LIKE 조회 결과가 바뀔 수 있으므로 해당 검색어 캐시는 비운다.
+        extraProductCache.delete(input.value.trim().toLowerCase());
+        renderExtraProducts(input.value);
+    };
+
+    button.addEventListener('click', search);
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            search();
+        }
+    });
 }
 
 $$('[data-tab]').forEach(b => b.onclick = () => { $$('[data-tab]').forEach(x => x.classList.remove('active')); b.classList.add('active'); $('#structureTab').classList.toggle('hidden', b.dataset.tab !== 'structure'); $('#furnitureTab').classList.toggle('hidden', b.dataset.tab !== 'furniture') });
@@ -2643,4 +2781,4 @@ document.addEventListener('pointerdown', e => {
 window.addEventListener('blur', () => { closeContextMenu(); closeRoomContextMenu(); });
 window.addEventListener('resize', () => { closeContextMenu(); closeRoomContextMenu(); });
 
-buildTools(); seed(); render(); recordPageVisit();
+buildTools(); seed(); render(); bindExtraProductSearch(); renderExtraProducts(''); recordPageVisit();
