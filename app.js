@@ -21,7 +21,7 @@ const catalog = {
 // true  : 로컬 Node.js API -> SQLite
 // false : Cloudflare Worker API -> D1
 // 이 값 하나로 플래너와 admin 페이지의 DB 모드를 함께 전환합니다.
-const USE_LOCAL_DB = true;
+const USE_LOCAL_DB = false;
 
 // 상품카드 표시 방식
 // 'detail' = 기존 방식: 배너 + 상품명 + 사이즈 + 버튼

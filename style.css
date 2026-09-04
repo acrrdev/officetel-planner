@@ -225,3 +225,7 @@ body{margin:0;font-family:Arial,'Noto Sans KR',sans-serif;color:var(--text);back
     transform:none!important;
     cursor:pointer;
 }
+
+
+/* UI cleanup */
+.recommend-box{display:none!important;}
