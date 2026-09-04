@@ -21,7 +21,7 @@ const catalog = {
 // true  : 로컬 Node.js API -> SQLite
 // false : Cloudflare Worker API -> D1
 // 이 값 하나로 플래너와 admin 페이지의 DB 모드를 함께 전환합니다.
-const USE_LOCAL_DB = false;
+const USE_LOCAL_DB = true;
 
 // 한 번 불러온 카테고리 상품은 페이지가 열려 있는 동안 메모리에 보관한다.
 const productCache = new Map();
@@ -2308,6 +2308,27 @@ function createProductCard(product) {
         img.src = product.image_url;
         img.alt = product.name || '상품 이미지';
         img.loading = 'lazy';
+
+        const imageScale =
+            Number.isFinite(Number(product.image_view?.scale))
+                ? Number(product.image_view.scale)
+                : 215;
+
+        const imagePosX =
+            Number.isFinite(Number(product.image_view?.x))
+                ? Number(product.image_view.x)
+                : 50;
+
+        const imagePosY =
+            Number.isFinite(Number(product.image_view?.y))
+                ? Number(product.image_view.y)
+                : 50;
+
+        img.style.left = `${imagePosX}%`;
+        img.style.top = `${imagePosY}%`;
+        img.style.transform =
+            `translate(-50%, -50%) scale(${imageScale / 100})`;
+
         img.onerror = () => {
             imageBox.innerHTML = '';
             imageBox.textContent = '이미지 없음';
