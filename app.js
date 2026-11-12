@@ -2709,6 +2709,95 @@ $('#allGuideToggle')?.addEventListener('change', e => {
     render();
 });
 
+function collectDocumentStyles() {
+    return [...document.styleSheets].map(sheet => {
+        try {
+            return [...sheet.cssRules].map(rule => rule.cssText).join('\n');
+        } catch (error) {
+            console.warn('JPG 저장용 스타일을 읽지 못했습니다.', error);
+            return '';
+        }
+    }).join('\n');
+}
+
+function jpgFileName() {
+    const now = new Date();
+    const pad = value => String(value).padStart(2, '0');
+    return `오피스텔-구성도-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.jpg`;
+}
+
+async function saveFloorPlanAsJpg() {
+    const button = $('#saveJpgBtn');
+    const source = $('#floorSvg');
+    if (!button || !source) return;
+
+    const originalLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = '저장 중…';
+
+    try {
+        const clone = source.cloneNode(true);
+        clone.querySelectorAll('.select-outline, .resize-handle, .notch-handle, .room-resize-handle, .measurement-guides')
+            .forEach(element => element.remove());
+
+        const style = document.createElementNS(NS, 'style');
+        style.textContent = collectDocumentStyles();
+        clone.insertBefore(style, clone.firstChild);
+        clone.setAttribute('xmlns', NS);
+
+        const viewBox = source.viewBox.baseVal;
+        const maxPixels = 2400;
+        const scale = Math.min(maxPixels / viewBox.width, maxPixels / viewBox.height, 1);
+        const width = Math.max(1, Math.round(viewBox.width * scale));
+        const height = Math.max(1, Math.round(viewBox.height * scale));
+        clone.setAttribute('width', width);
+        clone.setAttribute('height', height);
+
+        const svgText = new XMLSerializer().serializeToString(clone);
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const imageUrl = URL.createObjectURL(svgBlob);
+
+        try {
+            const image = await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('구성도 이미지를 변환하지 못했습니다.'));
+                img.src = imageUrl;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, width, height);
+            context.drawImage(image, 0, 0, width, height);
+
+            const jpgBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+            if (!jpgBlob) throw new Error('JPG 파일을 만들지 못했습니다.');
+
+            const downloadUrl = URL.createObjectURL(jpgBlob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = jpgFileName();
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+        } finally {
+            URL.revokeObjectURL(imageUrl);
+        }
+    } catch (error) {
+        console.error('JPG 저장 실패:', error);
+        alert('JPG 저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+    }
+}
+
+$('#saveJpgBtn')?.addEventListener('click', saveFloorPlanAsJpg);
+
 $$('[data-action]').forEach(b => b.onclick = () => {
     const a = b.dataset.action;
     if (a === 'new') openTemplateModal();
